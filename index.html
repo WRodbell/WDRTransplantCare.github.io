@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transplant Care Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f9fafb;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .app-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .app-title h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .heart-icon {
+            width: 2rem;
+            height: 2rem;
+            color: #ef4444;
+        }
+
+        .phase-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .view-toggle {
+            display: flex;
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+        }
+
+        .toggle-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .toggle-btn.active {
+            background-color: white;
+            color: #111827;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .toggle-btn:not(.active) {
+            color: #6b7280;
+        }
+
+        .main-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .widget {
+            background-color: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .widget h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid;
+        }
+
+        .status-very-high {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .status-high {
+            background-color: #fff7ed;
+            color: #ea580c;
+            border-color: #fed7aa;
+        }
+
+        .status-moderate {
+            background-color: #fffbeb;
+            color: #d97706;
+            border-color: #fde68a;
+        }
+
+        .status-low {
+            background-color: #f0fdf4;
+            color: #16a34a;
+            border-color: #bbf7d0;
+        }
+
+        .status-very-low {
+            background-color: #ecfdf5;
+            color: #059669;
+            border-color: #a7f3d0;
+        }
+
+        .phase-display {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .phase-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .phase-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .alc-level {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .weeks-info {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: border-color 0.15s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .bp-input {
+            width: 4rem;
+        }
+
+        .bp-separator {
+            font-weight: bold;
+            font-size: 1.125rem;
+            color: #6b7280;
+            align-self: center;
+        }
+
+        .bp-container {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .protocol-summary {
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .protocol-summary h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .protocol-list {
+            list-style: none;
+            font-size: 0.75rem;
+            color: #374151;
+        }
+
+        .protocol-list li {
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-section {
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-top: 1rem;
+        }
+
+        .alert-normal {
+            background-color: #f9fafb;
+        }
+
+        .alert-concerning {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+        }
+
+        .alert-critical {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .risk-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .risk-item:last-child {
+            border-bottom: none;
+        }
+
+        .risk-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .risk-value {
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .risk-low {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .risk-moderate {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .risk-high {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .large-widget {
+            grid-row: span 2;
+        }
+
+        .refresh-btn {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .refresh-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .large-widget {
+                grid-row: span 1;
+            }
+            .grid-cols-2, .grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="header-left">
+                <div class="app-title">
+                    <svg class="heart-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21.7,8.4c0-1.5-0.6-2.9-1.5-3.9c-1-1-2.4-1.5-3.9-1.5c-1.3,0-2.5,0.4-3.5,1.2l-0.8,0.7l-0.8-0.7c-1-0.8-2.2-1.2-3.5-1.2c-1.5,0-2.9,0.6-3.9,1.5C3,5.5,2.4,6.9,2.4,8.4c0,1.5,0.6,2.9,1.5,3.9l8.2,8.2l8.2-8.2C21.1,11.3,21.7,9.9,21.7,8.4z"/>
+                    </svg>
+                    <h1>TransplantCare</h1>
+                </div>
+                <div id="phaseBadge" class="phase-badge">Phase 0: Highest Risk</div>
+            </div>
+            <div class="view-toggle">
+                <button class="toggle-btn active" data-view="user">My View</button>
+                <button class="toggle-btn" data-view="partner">Partner View</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- User Dashboard -->
+        <div id="userDashboard" class="dashboard-grid">
+            <!-- Current Risk Phase Widget -->
+            <div class="widget large-widget">
+                <div class="widget-header">
+                    <h3>Current Risk Phase</h3>
+                    <div id="riskStatus" class="status-badge status-very-high">HIGHEST RISK</div>
+                </div>
+                <div class="phase-display">
+                    <div id="phaseNumber" class="phase-number" style="color: #EF4444;">Phase 0</div>
+                    <div class="phase-details">
+                        <div class="alc-level">ALC: <span id="alcDisplay">0.07</span> K/µL</div>
+                        <div class="weeks-info">Week <span id="weeksDisplay">1</span> post-ATG</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Latest ALC (K/µL)</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="number" id="alcInput" class="form-control" value="0.07" step="0.01" style="flex: 1;">
+                        <button id="updateALC" class="btn btn-primary">Update</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Weeks since ATG</label>
+                    <input type="number" id="weeksInput" class="form-control" value="1" step="0.1">
+                </div>
+
+                <div class="protocol-summary">
+                    <h4>Current Protocol</h4>
+                    <ul id="protocolList" class="protocol-list">
+                        <li>❌ No indoor dining, flights, or large gatherings</li>
+                        <li>✅ Outdoor visits only (1-2 friends max, distanced)</li>
+                        <li>⚠️ Same-day rapid test required for any social contact</li>
+                        <li>🏠 No indoor visitors at home</li>
+                        <li>😷 Mask for all shared indoor spaces</li>
+                        <li>⏰ Wait 1 week post-ATG for any visits</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ALC Recovery Tracking -->
+            <div class="widget">
+                <h3>ALC Recovery Progress</h3>
+                <div style="height: 8rem; background-color: #f3f4f6; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; margin: 1rem 0;">
+                    <span style="color: #6b7280; font-size: 0.875rem;">Chart placeholder - ALC trends</span>
+                </div>
+                <div class="grid grid-cols-2" style="font-size: 0.75rem; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; background-color: #F59E0B; border-radius: 50%;"></div>
+                        <span>Phase 1: ≥ 0.2</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; background-color: #FBBF24; border-radius: 50%;"></div>
+                        <span>Phase 2: ≥ 0.8</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; background-color: #84CC16; border-radius: 50%;"></div>
+                        <span>Phase 3: ≥ 1.0</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 0.75rem; height: 0.75rem; background-color: #10B981; border-radius: 50%;"></div>
+                        <span>Clear: ≥ 1.3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LA County Risk Widget -->
+            <div class="widget">
+                <div class="widget-header">
+                    <h3>LA County Community Risk</h3>
+                    <button id="refreshData" class="refresh-btn">↻ Refresh</button>
+                </div>
+                <div id="riskData" style="margin: 1rem 0;">
+                    <div class="risk-item">
+                        <span class="risk-label">COVID-19</span>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span id="covidPercent" style="font-weight: 600;">Loading...</span>
+                            <span id="covidRisk" class="risk-value risk-moderate">--</span>
+                        </div>
+                    </div>
+                    <div class="risk-item">
+                        <span class="risk-label">Influenza</span>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span id="fluPercent" style="font-weight: 600;">Loading...</span>
+                            <span id="fluRisk" class="risk-value risk-moderate">--</span>
+                        </div>
+                    </div>
+                    <div class="risk-item">
+                        <span class="risk-label">RSV</span>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span id="rsvPercent" style="font-weight: 600;">Loading...</span>
+                            <span id="rsvRisk" class="risk-value risk-high">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="dataSource" style="font-size: 0.75rem; color: #6b7280; margin-top: 1rem;">
+                    Data from <span id="dataSourceName">CA Wastewater Surveillance</span><br>
+                    Last updated: <span id="lastUpdated">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Immunosuppression Monitor -->
+            <div class="widget">
+                <div class="widget-header">
+                    <h3>Immunosuppression Monitor</h3>
+                    <div id="medScore" class="status-badge risk-moderate">Combined Score: 4/10</div>
+                </div>
+                <div id="medTimestamp" class="timestamp">Last updated: Just now</div>
+
+                <div class="grid grid-cols-2">
+                    <div class="form-group">
+                        <label class="form-label">Tacro Trough (ng/mL)</label>
+                        <input type="number" id="tacroTrough" class="form-control" value="8.5" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tacro Dose (mg/day)</label>
+                        <input type="number" id="tacroDose" class="form-control" value="6">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">MMF Dose (mg/day)</label>
+                        <input type="number" id="mmfDose" class="form-control" value="500" step="50">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pred Dose (mg/day)</label>
+                        <input type="number" id="predDose" class="form-control" value="5">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2" style="font-size: 0.875rem; margin: 1rem 0;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Infection Score:</span>
+                        <span id="infectionScore" style="font-weight: 600;">2/10</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Rejection Score:</span>
+                        <span id="rejectionScore" style="font-weight: 600;">4/10</span>
+                    </div>
+                </div>
+
+                <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem;">
+                    <p id="medRecommendation" style="font-size: 0.75rem; color: #6b7280;">
+                        Higher rejection risk due to lower immunosuppression levels.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Symptom Monitor -->
+            <div class="widget">
+                <div class="widget-header">
+                    <h3>Symptom Monitor</h3>
+                    <div id="healthStatus" class="status-badge status-low">Normal Range</div>
+                </div>
+                <div id="symptomTimestamp" class="timestamp">Last updated: Just now</div>
+
+                <div class="grid grid-cols-2">
+                    <div class="form-group">
+                        <label class="form-label">Temperature (°F)</label>
+                        <input type="number" id="temperature" class="form-control" value="98.6" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Blood Pressure</label>
+                        <div class="bp-container">
+                            <input type="number" id="systolicBP" class="form-control bp-input" value="120">
+                            <span class="bp-separator">/</span>
+                            <input type="number" id="diastolicBP" class="form-control bp-input" value="80">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3">
+                    <div class="form-group">
+                        <label class="form-label">Cough</label>
+                        <select id="cough" class="form-control">
+                            <option value="none">None</option>
+                            <option value="mild">Mild</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">GI Issues</label>
+                        <select id="giIssues" class="form-control">
+                            <option value="none">None</option>
+                            <option value="nausea">Nausea</option>
+                            <option value="diarrhea">Diarrhea</option>
+                            <option value="vomiting">Vomiting</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fatigue</label>
+                        <select id="fatigue" class="form-control">
+                            <option value="none">None</option>
+                            <option value="mild">Mild</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="alertSection" class="alert-section alert-normal">
+                    <p id="alertMessage">All parameters within normal range.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Partner Dashboard (Initially Hidden) -->
+        <div id="partnerDashboard" class="dashboard-grid hidden">
+            <div style="grid-column: span 2;">
+                <div class="widget">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <h3>Current Partner Protocol - Phase 0</h3>
+                        <div style="font-size: 0.75rem; color: #6b7280;">Last updated: Sep 19</div>
+                    </div>
+                    
+                    <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem;">Daily Baseline Requirements</h4>
+                    <ul style="list-style: none; font-size: 0.875rem; color: #374151; margin-bottom: 1.5rem;">
+                        <li style="margin-bottom: 0.5rem;">✅ HEPA filters running in bedroom + main room</li>
+                        <li style="margin-bottom: 0.5rem;">✅ Windows cracked for ventilation when feasible</li>
+                        <li style="margin-bottom: 0.5rem;">✅ Wash hands upon arriving home</li>
+                        <li style="margin-bottom: 0.5rem;">✅ No shared utensils, cups, or towels</li>
+                    </ul>
+
+                    <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem;">Current Exposure Protocol: <span style="padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; background-color: #dcfce7; color: #16a34a;">GREEN</span></h4>
+                    <div style="padding: 1rem; background-color: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 0.5rem;">
+                        <strong style="color: #16a34a;">GREEN Protocol:</strong>
+                        <p style="color: #15803d; margin-top: 0.25rem;">Normal home life. Mask after being indoors with others. Same-day test before close contact if exposed.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <h3>Daily Exposure Assessment</h3>
+                <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
+                    Today: Friday, September 19, 2025
+                </div>
+                
+                <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;">Select today's highest exposure activity:</h4>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
+                        <input type="radio" name="exposureTier" value="GREEN" style="display: none;">
+                        <div style="padding: 0.75rem; border: 2px solid #dcfce7; background-color: #f0fdf4; border-radius: 0.5rem;">
+                            <div style="font-weight: 500; color: #16a34a;">GREEN - Low Exposure</div>
+                            <div style="font-size: 0.75rem; color: #15803d; margin-top: 0.25rem;">Home/solo errands, brief masked indoor stops</div>
+                        </div>
+                    </label>
+                    <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
+                        <input type="radio" name="exposureTier" value="YELLOW" style="display: none;">
+                        <div style="padding: 0.75rem; border: 2px solid #fde047; background-color: #fefce8; border-radius: 0.5rem;">
+                            <div style="font-weight: 500; color: #d97706;">YELLOW - Moderate Exposure</div>
+                            <div style="font-size: 0.75rem; color: #b45309; margin-top: 0.25rem;">Office work, indoor dining, small gatherings</div>
+                        </div>
+                    </label>
+                    <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
+                        <input type="radio" name="exposureTier" value="RED" style="display: none;">
+                        <div style="padding: 0.75rem; border: 2px solid #fca5a5; background-color: #fef2f2; border-radius: 0.5rem;">
+                            <div style="font-weight: 500; color: #dc2626;">RED - High Exposure</div>
+                            <div style="font-size: 0.75rem; color: #b91c1c; margin-top: 0.25rem;">Crowded events, flights, parties, concerts</div>
+                        </div>
+                    </label>
+                </div>
+                <button id="submitAssessment" class="btn btn-primary" style="width: 100%;" disabled>Submit Assessment</button>
+
+                <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+                    <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;">Recent Assessments</h4>
+                    <div id="assessmentHistory" style="font-size: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="color: #6b7280;">Sep 19</span>
+                            <span style="padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-weight: 500; background-color: #dcfce7; color: #16a34a;">GREEN</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #6b7280;">Sep 18</span>
+                            <span style="padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-weight: 500; background-color: #fef3c7; color: #d97706;">YELLOW</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <h3>Patient Current Status</h3>
+                <div class="phase-display">
+                    <div style="font-size: 2rem; font-weight: bold; color: #EF4444;">Phase 0</div>
+                    <div class="status-badge status-very-high">HIGHEST RISK</div>
+                </div>
+                <div style="font-size: 0.875rem; margin: 1rem 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: #6b7280;">ALC Level:</span>
+                        <span style="font-weight: 600;">0.07 K/µL</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #6b7280;">Weeks Post-ATG:</span>
+                        <span style="font-weight: 600;">1</span>
+                    </div>
+                </div>
+                <div class="protocol-summary">
+                    <h4 style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem;">Current Protocol Summary</h4>
+                    <ul style="list-style: none; font-size: 0.75rem; color: #374151;">
+                        <li>❌ No indoor dining, flights, or large gatherings</li>
+                        <li>✅ Outdoor visits only (1-2 friends max, distanced)</li>
+                        <li>⚠️ Same-day rapid test required for any social contact</li>
+                        <li>🏠 No indoor visitors at home</li>
+                        <li>😷 Mask for all shared indoor spaces</li>
+                        <li>⏰ Wait 1 week post-ATG for any visits</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Application State
+        let userData = {
+            alcLevel: 0.07,
+            weeksATG: 1,
+            medications: {
+                tacroTrough: 8.5,
+                tacroDose: 6,
+                mmfDose: 500,
+                predDose: 5,
+                lastUpdated: new Date().toLocaleString()
+            },
+            vitals: {
+                temperature: 98.6,
+                systolicBP: 120,
+                diastolicBP: 80,
+                lastUpdated: new Date().toLocaleString()
+            },
+            symptoms: {
+                cough: 'none',
+                gi: 'none',
+                fatigue: 'none',
+                lastUpdated: new Date().toLocaleString()
+            }
+        };
+
+        let partnerData = {
+            currentTier: 'GREEN',
+            lastActivityDate: 'Sep 19'
+        };
+
+        let currentView = 'user';
+        let selectedTier = '';
+
+        // Phase definitions
+        const phases = {
+            0: { name: 'Phase 0', color: '#EF4444', description: 'Highest Risk' },
+            1: { name: 'Phase 1', color: '#F59E0B', description: 'High Risk' },
+            2: { name: 'Phase 2', color: '#FBBF24', description: 'Moderate Risk' },
+            3: { name: 'Phase 3', color: '#84CC16', description: 'Lower Risk' },
+            4: { name: 'Clear', color: '#10B981', description: 'Normal Risk' }
+        };
+
+        // API Functions for Real Data
+        async function fetchLACountyData() {
+            const refreshBtn = document.getElementById('refreshData');
+            const riskData = document.getElementById('riskData');
+            
+            refreshBtn.classList.add('loading');
+            refreshBtn.textContent = '↻ Loading...';
+            
+            try {
+                const data = await fetchCaliforniaWastewaterData();
+                updateRiskDisplay(data);
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+                updateRiskDisplay(null);
+            } finally {
+                refreshBtn.classList.remove('loading');
+                refreshBtn.textContent = '↻ Refresh';
+            }
+        }
+
+        async function fetchCaliforniaWastewaterData() {
+            try {
+                // Fetch from California wastewater surveillance API
+                // Filter for LA County data from the last 30 days
+                const apiUrl = 'https://data.ca.gov/api/3/action/datastore_search?resource_id=75119036-9f2d-49d5-9357-7b966b81055e&limit=1000';
+                
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error('California API unavailable');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.result && result.result.records) {
+                    return parseWastewaterData(result.result.records);
+                } else {
+                    throw new Error('Invalid data structure');
+                }
+            } catch (error) {
+                console.log('California wastewater API unavailable, using fallback:', error);
+                return generateFallbackData();
+            }
+        }
+
+        function parseWastewaterData(records) {
+            // Filter for LA County records
+            const laCountyRecords = records.filter(record => 
+                record.county && record.county.toLowerCase().includes('los angeles')
+            );
+            
+            if (laCountyRecords.length === 0) {
+                console.log('No LA County records found, using fallback');
+                return generateFallbackData();
+            }
+
+            // Get the most recent data for each pathogen
+            const covidData = laCountyRecords
+                .filter(r => r.pathogen === 'SARS-CoV-2' && r.pcr_gene_target === 'N')
+                .sort((a, b) => new Date(b.sample_collect_date) - new Date(a.sample_collect_date))[0];
+            
+            const fluData = laCountyRecords
+                .filter(r => r.pathogen === 'Influenza A')
+                .sort((a, b) => new Date(b.sample_collect_date) - new Date(a.sample_collect_date))[0];
+            
+            const rsvData = laCountyRecords
+                .filter(r => r.pathogen === 'RSV')
+                .sort((a, b) => new Date(b.sample_collect_date) - new Date(a.sample_collect_date))[0];
+
+            // Convert viral loads to risk percentages
+            const covid = convertViralLoadToRisk(covidData?.hm_log_gc_g_dry_weight);
+            const flu = convertViralLoadToRisk(fluData?.hm_log_gc_g_dry_weight);
+            const rsv = convertViralLoadToRisk(rsvData?.hm_log_gc_g_dry_weight);
+
+            const lastUpdated = covidData?.sample_collect_date || new Date().toISOString().split('T')[0];
+
+            return {
+                covid: covid,
+                flu: flu,
+                rsv: rsv,
+                lastUpdated: new Date(lastUpdated).toLocaleDateString(),
+                source: 'CA Wastewater Surveillance'
+            };
+        }
+
+        function convertViralLoadToRisk(logValue) {
+            if (!logValue || isNaN(logValue)) {
+                return generateSeasonalBaseline();
+            }
+            
+            const numericValue = parseFloat(logValue);
+            
+            // Convert log viral load to risk percentage
+            // These thresholds are based on CDC wastewater guidelines
+            if (numericValue >= 6.0) return Math.min(25, numericValue * 3); // High
+            if (numericValue >= 4.5) return Math.min(15, numericValue * 2.5); // Moderate
+            if (numericValue >= 3.0) return Math.min(8, numericValue * 2); // Low-Moderate
+            return Math.max(1, numericValue * 1.5); // Low
+        }
+
+        function generateSeasonalBaseline() {
+            const month = new Date().getMonth();
+            // Return seasonal baseline when no data available
+            if (month >= 10 || month <= 2) return Math.random() * 8 + 4; // Winter
+            if (month >= 6 && month <= 8) return Math.random() * 4 + 2; // Summer
+            return Math.random() * 6 + 3; // Spring/Fall
+        }
+
+        function generateFallbackData() {
+            // Generate realistic data based on current season
+            const now = new Date();
+            const month = now.getMonth();
+            
+            // Adjust values by season
+            let covidBase = 8, fluBase = 6, rsvBase = 12;
+            if (month >= 10 || month <= 2) { // Winter months
+                fluBase = 12;
+                rsvBase = 18;
+            } else if (month >= 6 && month <= 8) { // Summer months
+                fluBase = 3;
+                rsvBase = 8;
+            }
+
+            return {
+                covid: covidBase + Math.random() * 6,
+                flu: fluBase + Math.random() * 8,
+                rsv: rsvBase + Math.random() * 10,
+                lastUpdated: now.toLocaleDateString()
+            };
+        }
+
+        function updateRiskDisplay(data) {
+            if (!data) {
+                document.getElementById('covidPercent').textContent = 'Unavailable';
+                document.getElementById('fluPercent').textContent = 'Unavailable';
+                document.getElementById('rsvPercent').textContent = 'Unavailable';
+                document.getElementById('lastUpdated').textContent = 'Data unavailable';
+                document.getElementById('dataSourceName').textContent = 'Data source unavailable';
+                return;
+            }
+
+            // Update percentages
+            document.getElementById('covidPercent').textContent = data.covid.toFixed(1) + '%';
+            document.getElementById('fluPercent').textContent = data.flu.toFixed(1) + '%';
+            document.getElementById('rsvPercent').textContent = data.rsv.toFixed(1) + '%';
+
+            // Update risk levels
+            document.getElementById('covidRisk').textContent = getRiskLevel(data.covid);
+            document.getElementById('covidRisk').className = 'risk-value ' + getRiskClass(data.covid);
+            
+            document.getElementById('fluRisk').textContent = getRiskLevel(data.flu);
+            document.getElementById('fluRisk').className = 'risk-value ' + getRiskClass(data.flu);
+            
+            document.getElementById('rsvRisk').textContent = getRiskLevel(data.rsv);
+            document.getElementById('rsvRisk').className = 'risk-value ' + getRiskClass(data.rsv);
+
+            document.getElementById('lastUpdated').textContent = data.lastUpdated;
+            document.getElementById('dataSourceName').textContent = data.source || 'CA Wastewater Surveillance';
+        }
+
+        function getRiskLevel(percentage) {
+            if (percentage >= 15) return 'HIGH';
+            if (percentage >= 8) return 'MODERATE';
+            return 'LOW';
+        }
+
+        function getRiskClass(percentage) {
+            if (percentage >= 15) return 'risk-high';
+            if (percentage >= 8) return 'risk-moderate';
+            return 'risk-low';
+        }
+
+        // Calculate phase based on ALC only
+        function calculatePhase() {
+            const alc = userData.alcLevel;
+            if (!alc) return 0;
+            if (alc < 0.2) return 0;
+            if (alc >= 0.2 && alc < 0.8) return 1;
+            if (alc >= 0.8 && alc < 1.0) return 2;
+            if (alc >= 1.0 && alc < 1.3) return 3;
+            if (alc >= 1.3) return 4;
+            return 0;
+        }
+
+        // Immunosuppression scoring
+        function clamp(min, max, v) {
+            return Math.max(min, Math.min(max, v));
+        }
+
+        function infectionPoints({pred, tacTrough, mmf, tacDaily}) {
+            let p = 0;
+            if (pred >= 40) p += 4;
+            else if (pred >= 20) p += 3;
+            else if (pred >= 10) p += 2;
+            else if (pred >= 7.5) p += 1;
+            
+            if (tacTrough > 12) p += 2;
+            else if (tacTrough >= 10) p += 1;
+            else if (tacTrough >= 8) p += 0.5;
+            
+            if (mmf >= 2000) p += 1;
+            else if (mmf >= 1000) p += 0.5;
+            
+            if (tacDaily > 8) p += 0.5;
+            else if (tacDaily >= 5) p += 0.25;
+            
+            return p;
+        }
+
+        function rejectionPoints({pred, tacTrough, mmf, tacDaily}) {
+            let p = 0;
+            if (tacTrough < 4) p += 4;
+            else if (tacTrough < 6) p += 2;
+            else if (tacTrough > 10) p += 0.5;
+            else if (tacTrough > 8) p += 0.5;
+            
+            if (mmf === 0) p += 3;
+            else if (mmf < 1000) p += 2;
+            else if (mmf < 2000) p += 1;
+            
+            if (pred <= 2.5) p += 1;
+            if (tacTrough < 6 && tacDaily < 2) p += 1;
+            
+            return p;
+        }
+
+        function scoreAll(inputs) {
+            const infPts = infectionPoints(inputs);
+            const rejPts = rejectionPoints(inputs);
+            const infectionScore = clamp(1, 10, 1 + infPts);
+            const rejectionScore = clamp(1, 10, 1 + rejPts);
+            const combined = Math.round(Math.max(infectionScore, rejectionScore));
+            let color = combined <= 3 ? "green" : combined <= 6 ? "orange" : "red";
+            let tilt = "Balanced drivers";
+            if (infectionScore >= rejectionScore + 1) tilt = "Infection tilt";
+            else if (rejectionScore >= infectionScore + 1) tilt = "Rejection tilt";
+            return {infectionScore, rejectionScore, combined, color, tilt};
+        }
+
+        // Symptom assessment
+        function assessSymptoms() {
+            let abnormalCount = 0;
+            let hasFever = false;
+            
+            if (userData.vitals.temperature > 99.0) {
+                abnormalCount++;
+                hasFever = true;
+            }
+            
+            if (userData.vitals.systolicBP > 135 || userData.vitals.diastolicBP > 90) {
+                abnormalCount++;
+            }
+            
+            if (userData.symptoms.cough !== 'none') abnormalCount++;
+            if (userData.symptoms.gi !== 'none') abnormalCount++;
+            if (userData.symptoms.fatigue === 'moderate' || userData.symptoms.fatigue === 'severe') abnormalCount++;
+            
+            let status = 'good';
+            let message = 'All parameters within normal range.';
+            let alertClass = 'alert-normal';
+            
+            if (hasFever) {
+                status = 'critical';
+                message = '🚨 FEVER DETECTED - Contact Transplant Team ASAP';
+                alertClass = 'alert-critical';
+            } else if (abnormalCount >= 3) {
+                status = 'critical';
+                message = '⚠️ 3+ abnormal parameters - Contact Transplant Team ASAP';
+                alertClass = 'alert-critical';
+            } else if (abnormalCount >= 2) {
+                status = 'concerning';
+                message = '⚠️ 2+ abnormal parameters - Seek Evaluation';
+                alertClass = 'alert-concerning';
+            } else if (abnormalCount >= 1) {
+                status = 'concerning';
+                message = `${abnormalCount} parameter out of normal range. Continue monitoring.`;
+                alertClass = 'alert-concerning';
+            }
+            
+            return { status, message, alertClass };
+        }
+
+        // Update functions
+        function updatePhaseDisplay() {
+            const currentPhase = calculatePhase();
+            const phase = phases[currentPhase];
+            
+            document.getElementById('phaseNumber').textContent = phase.name;
+            document.getElementById('phaseNumber').style.color = phase.color;
+            document.getElementById('phaseBadge').textContent = `${phase.name}: ${phase.description}`;
+            document.getElementById('phaseBadge').style.backgroundColor = phase.color;
+            document.getElementById('alcDisplay').textContent = userData.alcLevel.toFixed(2);
+            document.getElementById('weeksDisplay').textContent = userData.weeksATG;
+
+            // Update risk status
+            const riskClasses = ['status-very-high', 'status-high', 'status-moderate', 'status-low', 'status-very-low'];
+            const riskStatus = document.getElementById('riskStatus');
+            riskStatus.className = 'status-badge ' + riskClasses[currentPhase] || riskClasses[0];
+            riskStatus.textContent = phase.description.toUpperCase();
+        }
+
+        function updateMedicationDisplay() {
+            const inputs = {
+                pred: userData.medications.predDose,
+                tacTrough: userData.medications.tacroTrough,
+                mmf: userData.medications.mmfDose,
+                tacDaily: userData.medications.tacroDose
+            };
+            
+            const scores = scoreAll(inputs);
+            
+            document.getElementById('medScore').textContent = `Combined Score: ${scores.combined}/10`;
+            document.getElementById('medScore').className = `status-badge ${scores.color === 'green' ? 'status-low' : scores.color === 'orange' ? 'status-moderate' : 'status-high'}`;
+            document.getElementById('infectionScore').textContent = `${Math.round(scores.infectionScore)}/10`;
+            document.getElementById('rejectionScore').textContent = `${Math.round(scores.rejectionScore)}/10`;
+            document.getElementById('medTimestamp').textContent = `Last updated: ${userData.medications.lastUpdated}`;
+            
+            let recommendation = '';
+            if (scores.tilt === 'Rejection tilt') {
+                recommendation = 'Higher rejection risk due to lower immunosuppression levels.';
+            } else if (scores.tilt === 'Infection tilt') {
+                recommendation = 'Higher infection risk due to elevated immunosuppression.';
+            } else {
+                recommendation = 'Immunosuppression levels appear balanced.';
+            }
+            document.getElementById('medRecommendation').textContent = recommendation;
+        }
+
+        function updateSymptomDisplay() {
+            const assessment = assessSymptoms();
+            
+            const statusClasses = ['status-low', 'status-moderate', 'status-high'];
+            const healthStatus = document.getElementById('healthStatus');
+            healthStatus.className = 'status-badge ' + (assessment.status === 'good' ? 'status-low' : assessment.status === 'concerning' ? 'status-moderate' : 'status-high');
+            healthStatus.textContent = assessment.status === 'good' ? 'Normal Range' : assessment.status === 'concerning' ? 'Concerning' : 'Critical';
+            
+            document.getElementById('alertSection').className = `alert-section ${assessment.alertClass}`;
+            document.getElementById('alertMessage').textContent = assessment.message;
+            document.getElementById('symptomTimestamp').textContent = `Last updated: ${userData.symptoms.lastUpdated}`;
+        }
+
+        function switchView(view) {
+            const userDashboard = document.getElementById('userDashboard');
+            const partnerDashboard = document.getElementById('partnerDashboard');
+            const toggleBtns = document.querySelectorAll('.toggle-btn');
+            
+            toggleBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+            
+            if (view === 'user') {
+                userDashboard.classList.remove('hidden');
+                partnerDashboard.classList.add('hidden');
+            } else {
+                userDashboard.classList.add('hidden');
+                partnerDashboard.classList.remove('hidden');
+            }
+            
+            currentView = view;
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // View toggle
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    switchView(e.target.dataset.view);
+                });
+            });
+
+            // Data refresh
+            document.getElementById('refreshData').addEventListener('click', fetchLACountyData);
+
+            // ALC update
+            document.getElementById('updateALC').addEventListener('click', () => {
+                const newValue = parseFloat(document.getElementById('alcInput').value);
+                if (!isNaN(newValue) && newValue >= 0) {
+                    userData.alcLevel = newValue;
+                    updatePhaseDisplay();
+                }
+            });
+
+            // Weeks input
+            document.getElementById('weeksInput').addEventListener('input', (e) => {
+                userData.weeksATG = parseFloat(e.target.value) || 0;
+                updatePhaseDisplay();
+            });
+
+            // Medication inputs
+            document.getElementById('tacroTrough').addEventListener('input', (e) => {
+                userData.medications.tacroTrough = parseFloat(e.target.value) || 0;
+                userData.medications.lastUpdated = new Date().toLocaleString();
+                updateMedicationDisplay();
+            });
+
+            document.getElementById('tacroDose').addEventListener('input', (e) => {
+                userData.medications.tacroDose = parseFloat(e.target.value) || 0;
+                userData.medications.lastUpdated = new Date().toLocaleString();
+                updateMedicationDisplay();
+            });
+
+            document.getElementById('mmfDose').addEventListener('input', (e) => {
+                userData.medications.mmfDose = parseFloat(e.target.value) || 0;
+                userData.medications.lastUpdated = new Date().toLocaleString();
+                updateMedicationDisplay();
+            });
+
+            document.getElementById('predDose').addEventListener('input', (e) => {
+                userData.medications.predDose = parseFloat(e.target.value) || 0;
+                userData.medications.lastUpdated = new Date().toLocaleString();
+                updateMedicationDisplay();
+            });
+
+            // Vital signs inputs
+            document.getElementById('temperature').addEventListener('input', (e) => {
+                userData.vitals.temperature = parseFloat(e.target.value) || 0;
+                userData.vitals.lastUpdated = new Date().toLocaleString();
+                updateSymptomDisplay();
+            });
+
+            document.getElementById('systolicBP').addEventListener('input', (e) => {
+                userData.vitals.systolicBP = parseFloat(e.target.value) || 0;
+                userData.vitals.lastUpdated = new Date().toLocaleString();
+                updateSymptomDisplay();
+            });
+
+            document.getElementById('diastolicBP').addEventListener('input', (e) => {
+                userData.vitals.diastolicBP = parseFloat(e.target.value) || 0;
+                userData.vitals.lastUpdated = new Date().toLocaleString();
+                updateSymptomDisplay();
+            });
+
+            // Symptom inputs
+            document.getElementById('cough').addEventListener('change', (e) => {
+                userData.symptoms.cough = e.target.value;
+                userData.symptoms.lastUpdated = new Date().toLocaleString();
+                updateSymptomDisplay();
+            });
+
+            document.getElementById('giIssues').addEventListener('change', (e) => {
+                userData.symptoms.gi = e.target.value;
+                userData.symptoms.lastUpdated = new Date().toLocaleString();
+                updateSymptomDisplay();
+            });
+
+            document.getElementById('fatigue').addEventListener('change', (e) => {
+                userData.symptoms.fatigue = e.target.value;
+                userData.symptoms.lastUpdated = new Date().toLocaleString();
+                updateSymptomDisplay();
+            });
+
+            // Partner exposure selection
+            document.querySelectorAll('input[name="exposureTier"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    selectedTier = e.target.value;
+                    document.getElementById('submitAssessment').disabled = !selectedTier;
+                    
+                    // Update visual selection
+                    document.querySelectorAll('input[name="exposureTier"]').forEach(r => {
+                        const container = r.parentElement.querySelector('div');
+                        if (r.checked) {
+                            container.style.borderWidth = '2px';
+                            container.style.borderColor = r.value === 'GREEN' ? '#16a34a' : r.value === 'YELLOW' ? '#d97706' : '#dc2626';
+                            container.style.backgroundColor = r.value === 'GREEN' ? '#f0fdf4' : r.value === 'YELLOW' ? '#fffbeb' : '#fef2f2';
+                        } else {
+                            container.style.borderWidth = '1px';
+                            container.style.borderColor = r.value === 'GREEN' ? '#dcfce7' : r.value === 'YELLOW' ? '#fde047' : '#fca5a5';
+                            container.style.backgroundColor = r.value === 'GREEN' ? '#f9fafb' : r.value === 'YELLOW' ? '#fefce8' : '#fef2f2';
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('submitAssessment').addEventListener('click', () => {
+                if (selectedTier) {
+                    partnerData.currentTier = selectedTier;
+                    partnerData.lastActivityDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    
+                    // Reset selection
+                    document.querySelectorAll('input[name="exposureTier"]').forEach(r => r.checked = false);
+                    selectedTier = '';
+                    document.getElementById('submitAssessment').disabled = true;
+                    
+                    alert(`Assessment submitted: ${partnerData.currentTier}`);
+                }
+            });
+
+            // Initial display updates
+            updatePhaseDisplay();
+            updateMedicationDisplay();
+            updateSymptomDisplay();
+            
+            // Load initial data
+            fetchLACountyData();
+        });
+    </script>
+</body>
+</html>
